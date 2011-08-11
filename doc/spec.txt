@@ -43,8 +43,183 @@ Reset address clarification
 __vend__
 ////
 
-The First Part of the Book
-==========================
+Introduction
+------------
+
+Purpose of this document is to define specifications of the OpenRISC 1200
+implementation. This specification defines all implementation specific
+variables that are not part of the general architecture specification. This
+includes type and size of data and instruction caches, type and size of data
+and instruction MMUs, details of all execution pipelines, implementation
+of exception unit, interrupt controller and other supplemental units.
+This document does not cover general architecture topics like instruction set,
+memory addressing modes and other architectural definitions. See OpenRISC
+1000 System Architecture Manual for more information about architecture.
+
+OpenRISC Family
+~~~~~~~~~~~~~~~
+OpenRISC 1000 is architecture for a family of free, open source RISC processor
+cores. As architecture, OpenRISC 1000 allows for a spectrum of chip and
+system implementations at a variety of price/performance points for a range of
+applications. It is a 32/64-bit load and store RISC architecture designed with
+emphasis on performance, simplicity, low power requirements, scalability and
+versatility. OpenRISC 1000 architecture targets medium and high performance
+networking, embedded, automotive and portable computer environments.
+
+image::img/or_family.gif[scaledwidth="50%",align="center"]
+
+All OpenRISC implementations, whose first digit in identification number
+is  1 , belong to OpenRISC 1000 family. Second digit defines which features
+of OpenRISC 1000 architecture are implemented and in which way they are
+implemented. Last two digits define how an implementation is configured
+before it is used in a real application.
+
+However, at present the OR1200 is the only major RTL implementation of the
+OR1K architecture spec, and the OR1200 name has stuck, despite the high level
+of reconfigurability possible that would, strictly speaking, mean the core
+is either a OR1000, OR1300, etc. So, despite the various features that may
+or may not be implemented, the core is still only referred to as the OR1200.
+
+OpenRISC 1200
+~~~~~~~~~~~~~
+The OR1200 is a 32-bit scalar RISC with Harvard microarchitecture, 5 stage
+integer pipeline, virtual memory support (MMU) and basic DSP capabilities.
+Default caches are 1-way direct-mapped 8KB data cache and 1-way direct-mapped
+8KB instruction cache, each with 16-byte line size. Both caches are
+physically tagged.  By default MMUs are implemented and they are constructed of
+64-entry hash based 1-way direct-mpped data TLB and 64-entry hash based 1-way
+direct-mapped instruction TLB.
+
+Supplemental facilities include debug unit for real-time debugging, high
+resolution tick timer, programmable interrupt controller and power management
+support.  When implemented in a typical 0.18u 6LM process it should provide
+over 300 dhrystone 2.1 MIPS at 300MHz and 300 DSP MAC 32x32 operations, at
+least 20% more than any other competitor in this class. OR1200 in default
+configuration has about 1M transistors.
+
+OR1200 is intended for embedded, portable and networking applications. It can
+successfully compete with latest scalar 32-bit RISC processors in his class
+and can efficiently run any modern operating system.  Competitors include
+ARM10, ARC and Tensilica RISC processors.
+
+Features
+^^^^^^^^
+The following lists the main features of OR1200 IP core:
+
+- All major characteristics of the core can be set by the user
+- High performance of 300 Dhrystone 2.1 MIPS at 300 MHz using 0.18u process
+- High performance cache and MMU subsystems
+- WISHBONE SoC Interconnection Rev. B3 compliant interface
+
+Architecture
+------------
+<<core_arch_img>> below shows general architecture of OR1200 IP core. It
+consists of several building blocks:
+
+- CPU/FPU/DSP central block
+- Direct-mapped data cache
+- Direct-mapped instruction cache
+- Data MMU based on hash based DTLB
+- Instruction MMU based on hash based ITLB
+- Power management unit and power management interface
+- Tick timer
+- Debug unit and development interface
+- Interrupt controller and interrupt interface
+- Instruction and Data WISHBONE host interfaces
+
+[[core_arch_img]]
+.Core's Architecture
+image::img/core_arch.gif[scaledwidth="50%",align="center"]
+
+CPU/FPU/DSP
+~~~~~~~~~~~
+CPU/FPU/DSP is a central part of the OR1200 RISC processor. Figure 2 shows
+basic block diagram of the CPU/DSP. Not pictured are the FPU components.
+OR1200 CPU/FPU/DSP ony implements sections of the ORBIS32 and ORFPX32
+instruction set. No ORBIS64, ORFBX64 or ORVDX64 instructions are  implemented
+in OR1200.
+
+[[cpu_fpu_dsp_img]]
+.CPU/FPU/DSP Block Diagram
+image::img/cpu_fpu_dsp.gif[scaledwidth="50%",align="center"]
+
+Instruction unit
+^^^^^^^^^^^^^^^^
+The instruction unit implements the basic instruction pipeline, fetches
+instructions from the memory subsystem, dispatches them to available execution
+units, and maintains a state history to ensure a precise exception model
+and that operations finish in order. It also executes conditional branch
+and unconditional jump instructions.
+
+The sequencer can dispatch a sequential instruction on each clock if the
+appropriate execution unit is available. The execution unit must discern
+whether source data is available and to ensure that no other instruction is
+targeting the same destination register.
+
+Instruction unit handles only ORBIS32 and, optionally, a subset of the ORFPX32
+instruction class. Some ORFPX32 and all ORFPX3264 and ORVDX64 instruction
+classes are not supported by the OR1200 at present.
+
+General-Purpose Registers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+OpenRISC 1200 implements 32 general-purpose 32-bit registers. OpenRISC 1000
+architecture also support shadow copies of register file to implement fast
+switching between working contexts, however this feature is not implemented
+in current OR1200 implementation.
+
+OR1200 implements general-purpose register file as two synchronous dual-port
+memories with capacity of 32 words by 32 bits per word.
+
+Load/Store Unit
+^^^^^^^^^^^^^^^
+
+The load/store unit (LSU) transfers all data between the GPRs and the CPU's
+internal bus. It is implemented as an independent execution unit so that stalls
+in memory subsystem only affect master pipeline if there is a data dependency.
+
+The following are LSU's main features:
+
+- all load/store instruction implemented in hardware (atomic instructions
+  included)
+- address entry buffer
+- pipelined operation
+- aligned accesses for fast memory access
+
+When load and store instructions are issued, the LSU determines if all
+operands are available. These operands include the following:
+
+- address register operand
+- source data register operand (for store instructions)
+- destination data register operand (for load instructions)
+
+Integer Execution Pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+The core implements the following types of 32-bit integer instructions:
+
+- Arithmetic instructions
+- Compare instructions
+- Logical instructions
+- Rotate and shift instructions
+
+Most integer instructions can execute in one cycle. For details about timing
+see <<exec_time_int>>.
+
+[[exec_time_int]]
+.Execution Time of Integer Instructions
+[width="60%",options="header"]
+|================================================
+| Instruction Group	| Clock Cycles to Execute
+| Arithmetic except Multiply/Divide	| 1
+| Multiply				| 3
+| Divide				| 32
+| Compare				| 1
+| Logical				| 1
+| Rotate and Shift			| 1
+| Others				| 1
+|================================================
+
+
+
 
 [partintro]
 .Optional part introduction title
@@ -115,9 +290,6 @@ indexterm:[Second example index entry]
 An example link to a bibliography entry <<taoup>>.
 
 
-
-The Second Part of the Book
-===========================
 
 The First Chapter of the Second Part
 ------------------------------------
