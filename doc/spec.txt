@@ -202,9 +202,188 @@ The core implements the following types of 32-bit integer instructions:
 - Rotate and shift instructions
 
 Most integer instructions can execute in one cycle. For details about timing
-see <<exec_time_int>>.
+see <<exec_time_int_table>>.
 
-[[exec_time_int]]
+MAC Unit
+^^^^^^^^
+The MAC unit executes DSP MAC operations. MAC operations are 32x32 with
+48-bit accumulator. MAC unit is fully pipelined and can accept new MAC
+operation in each new clock cycle.
+
+Floating Point Unit
+^^^^^^^^^^^^^^^^^^^
+The FPU implementation is based on two other FPUs available from OpenCores.org
+For the comparison and conversion functions, parts were taken from the FPU
+project by Rudolf Usselmann, and for the arithmetic operations, the fpu100
+project by Jidan Al-Eryani was converted to Verilog HDL.
+
+All ORFPX32 instructions except for lf.madd.s and lf.rem.s are supported
+when the FPU is enabled in the OR1200 configuration.
+
+System Unit
+^^^^^^^^^^^
+The system unit connects all other signals of the CPU/FPU/DSP that are not
+connected through instruction and data interfaces. It also implements all
+system special-purpose registers (e.g. supervisor register).
+
+Exceptions
+^^^^^^^^^^
+Core exceptions can be generated when an exception condition occurs. Exception
+sources in OR1200 include the following:
+
+- External interrupt request
+- Certain memory access condition
+- Internal errors, such as an attempt to execute unimplemented opcode
+- System call
+- Internal exception, such as breakpoint exceptions
+
+Exception handling is transparent to user software and uses the same mechanism
+to handle all types of exceptions. When an exception is taken, control is
+transferred to an exception handler at an offset defined by for the type of
+exception encountered. Exceptions are handled in supervisor mode.
+
+Data Cache
+~~~~~~~~~~
+The default configuration of OR1200 data cache is 8-Kbyte, 1-way direct-mapped
+data cache, which allows rapid core access to data. However data cache can
+be configured according to <<data_confs_or1200_table>>.
+
+[[data_confs_or1200_table]]
+.Possible Data Cache Configurations of OR1200
+[width="60%",options="header"]
+|======================================================
+|					| Direct mapped
+| 16B/line, 256 lines, 1 way		| 4KB
+| Arithmetic except Multiply/Divide	| 1
+| 16B/line, 256 lines, 1 way		| 4KB
+| 16B/line, 512 lines, 1 way		| *8KB (default)*
+| 16B/line, 1024 lines, 1 way		| 16KB
+| 32B/line, 1024 lines, 1 way		| 32KB
+|======================================================
+
+It is possible to operate the data cache with write-through or write-back
+strategies, however write-back is currently experimental.
+
+Features:
+
+- data cache is separate from instruction cache (Harvard architecture)
+- data cache implements a least-recently used (LRU) replacement algorithm
+  within each set
+- the cache directory is physically addressed. The physical address tag is
+  stored in the cache directory
+- write-through or write-back operation
+- entire cache can be disabled, lines invalidated, flushed or forced to be
+  written back, by writing to cache special purpose registers
+
+On a miss, and appropriate conditions, the cache line is filled or emptied
+(written back) with 16-byte bursts. The burst fill is performed as a
+critical-word-first operation; the critical word is simultaneously written
+to the cache and forwarded to the requesting unit, thus minimizing stalls
+due to cache fill latency. Data cache provides storage for cache tags and
+performs cache line replacement function.
+
+Data cache is tightly coupled to external interface to allow efficient
+access to the system memory controller.
+
+The data cache supplies data to the GPRs by means of a 32-bit interface
+to the load/store unit. The LSU provides all logic required to calculate
+effective addresses, handles data alignment to and from the data cache,
+and provides sequencing for load and store operations. Write operations to
+the data cache can be performed on a byte, half-word or word basis.
+
+image::img/data_cache_diag.gif[scaledwidth="50%",align="center"]
+
+Each line contains four contiguous words from memory that are loaded from
+a cache line aligned boundary. As a result, cache lines are aligned with
+page boundaries.
+
+Instruction Cache
+~~~~~~~~~~~~~~~~~
+The default configuration of OR1200 instruction cache is 8-Kbyte, 1-way
+direct mapped instruction cache, which allows rapid core access to
+instructions. However instruction cache can be configured according to
+<<inst_confs_or1200_table>>.
+
+[[inst_confs_or1200_table]]
+.Possible Instruction Cache Configurations of OR1200
+[width="60%",options="header"]
+|==============================================
+|				| Direct mapped
+| 16B/line, 32 lines, 1 way	| 512B
+| 16B/line, 256 lines, 1 way	| 4KB
+| 16B/line, 512 lines, 1 way	| *8KB (Default)*
+| 16B/line, 1024 lines, 1 way	| 16KB
+| 32B/line, 1024 lines, 1 way	| 32KB
+|==============================================
+
+Features:
+
+- instruction cache is separate from data cache (Harvard architecture)
+- instruction cache implements a least-recently used (LRU) replacement
+  algorithm within each set
+- the cache directory is physically addressed. The physical address tag is
+  stored in the cache directory
+- it can be disabled or invalidated by writing to cache special purpose
+  registers
+
+On a miss, the cache is filled in with 16-byte bursts. The burst fill
+is performed as a critical-word-first operation; the critical word is
+simultaneously written to the cache and forwarded to the requesting unit,
+thus minimizing stalls due to cache fill latency. Instruction cache provides
+storage for cache tags and performs cache line replacement function.
+
+Instruction cache is tightly coupled to external interface to allow efficient
+access to the system memory controller.
+
+The instruction cache supplies instructions to the instruction sequencer by
+means of a 32-bit interface to the instruction fetch subunit. The instruction
+fetch subunit provides all logic required to calculate effective addresses.
+
+image::img/inst_cache_diag.gif[scaledwidth="50%",align="center"]
+
+Each line contains four contiguous words from memory that are loaded from
+a line-size  aligned boundary. As a result, cache lines are aligned with
+page boundaries.
+
+Data MMU
+~~~~~~~~
+The OR1200 implements a virtual memory management scheme that provides memory
+access protection and effective-to-physical address translation. Protection
+granularity is as defined by OpenRISC 1000 architecture - 8-Kbyte and
+16-Mbyte pages.
+
+[[tlb_confs_or1200_table]]
+.Possible Data TLB Configurations of OR1200
+[width="60%",options="header"]
+|======================================
+|			| Direct mapped
+| 16 entries per way	| 16 DTLB entries
+| 32 entries per way	| 32 DTLB entries
+| 64 entries per way	| *64 DTLB entries (default)*
+| 128 entries per way	| 128 DTLB entries
+|======================================
+
+Features:
+
+* data MMU is separate from instruction MMU
+* page size 8-Kbyte
+* comprehensive page protection scheme
+* direct mapped hash based translation lookaside buffer (DTLB) with the
+  default of 1 way and the following features:
+** miss and fault exceptions
+** software tablewalk
+** high performance because of hashed based design
+** variable number DTLB entries with default of 64 per each way
+
+image::img/tlb_diag.gif[scaledwidth="50%",align="center"]
+
+The MMU hardware supports two-level software tablewalk.
+
+Instruction MMU
+~~~~~~~~~~~~~~~
+
+
+[[exec_time_int_table]]
 .Execution Time of Integer Instructions
 [width="60%",options="header"]
 |================================================
