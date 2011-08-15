@@ -45,7 +45,6 @@ __vend__
 
 Introduction
 ------------
-
 Purpose of this document is to define specifications of the OpenRISC 1200
 implementation. This specification defines all implementation specific
 variables that are not part of the general architecture specification. This
@@ -53,11 +52,12 @@ includes type and size of data and instruction caches, type and size of data
 and instruction MMUs, details of all execution pipelines, implementation
 of exception unit, interrupt controller and other supplemental units.
 This document does not cover general architecture topics like instruction set,
-memory addressing modes and other architectural definitions. See OpenRISC
-1000 System Architecture Manual for more information about architecture.
+memory addressing modes and other architectural definitions. See
+<<or1000_manual>> for more information about architecture.
 
 OpenRISC Family
 ~~~~~~~~~~~~~~~
+(((OpenRISC,Family)))
 OpenRISC 1000 is architecture for a family of free, open source RISC processor
 cores. As architecture, OpenRISC 1000 allows for a spectrum of chip and
 system implementations at a variety of price/performance points for a range of
@@ -82,6 +82,7 @@ or may not be implemented, the core is still only referred to as the OR1200.
 
 OpenRISC 1200
 ~~~~~~~~~~~~~
+(((OpenRISC,1200)))
 The OR1200 is a 32-bit scalar RISC with Harvard microarchitecture, 5 stage
 integer pipeline, virtual memory support (MMU) and basic DSP capabilities.
 Default caches are 1-way direct-mapped 8KB data cache and 1-way direct-mapped
@@ -113,7 +114,7 @@ The following lists the main features of OR1200 IP core:
 
 Architecture
 ------------
-<<core_arch_img>> below shows general architecture of OR1200 IP core. It
+<<core_arch_fig>> below shows general architecture of OR1200 IP core. It
 consists of several building blocks:
 
 - CPU/FPU/DSP central block
@@ -127,19 +128,19 @@ consists of several building blocks:
 - Interrupt controller and interrupt interface
 - Instruction and Data WISHBONE host interfaces
 
-[[core_arch_img]]
+[[core_arch_fig]]
 .Core's Architecture
 image::img/core_arch.gif[scaledwidth="50%",align="center"]
 
 CPU/FPU/DSP
 ~~~~~~~~~~~
-CPU/FPU/DSP is a central part of the OR1200 RISC processor. Figure 2 shows
-basic block diagram of the CPU/DSP. Not pictured are the FPU components.
-OR1200 CPU/FPU/DSP ony implements sections of the ORBIS32 and ORFPX32
-instruction set. No ORBIS64, ORFBX64 or ORVDX64 instructions are  implemented
-in OR1200.
+((CPU))/((FPU))/((DSP)) is a central part of the OR1200 RISC processor.
+<<cpu_fpu_dsp_fig>> shows basic block diagram of the CPU/DSP. Not pictured
+are the FPU components.  OR1200 CPU/FPU/DSP ony implements sections of
+the ORBIS32 and ORFPX32 instruction set. No ((ORBIS64)), ((ORFBX64)) or
+((ORVDX64)) instructions are implemented in OR1200.
 
-[[cpu_fpu_dsp_img]]
+[[cpu_fpu_dsp_fig]]
 .CPU/FPU/DSP Block Diagram
 image::img/cpu_fpu_dsp.gif[scaledwidth="50%",align="center"]
 
@@ -156,13 +157,13 @@ appropriate execution unit is available. The execution unit must discern
 whether source data is available and to ensure that no other instruction is
 targeting the same destination register.
 
-Instruction unit handles only ORBIS32 and, optionally, a subset of the ORFPX32
-instruction class. Some ORFPX32 and all ORFPX3264 and ORVDX64 instruction
-classes are not supported by the OR1200 at present.
+Instruction unit handles only ((ORBIS32)) and, optionally, a subset of the
+((ORFPX32)) instruction class. Some ((ORFPX32)) and all ((ORFPX3264)) and
+((ORVDX64)) instruction classes are not supported by the OR1200 at present.
 
 General-Purpose Registers
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-OpenRISC 1200 implements 32 general-purpose 32-bit registers. OpenRISC 1000
+OpenRISC 1200 implements 32 general-purpose 32-bit ((registers)). OpenRISC 1000
 architecture also support shadow copies of register file to implement fast
 switching between working contexts, however this feature is not implemented
 in current OR1200 implementation.
@@ -172,8 +173,7 @@ memories with capacity of 32 words by 32 bits per word.
 
 Load/Store Unit
 ^^^^^^^^^^^^^^^
-
-The load/store unit (LSU) transfers all data between the GPRs and the CPU's
+The ((load/store unit (LSU))) transfers all data between the GPRs and the CPU's
 internal bus. It is implemented as an independent execution unit so that stalls
 in memory subsystem only affect master pipeline if there is a data dependency.
 
@@ -194,6 +194,7 @@ operands are available. These operands include the following:
 
 Integer Execution Pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(((Pipeline, Integer Execution)))
 The core implements the following types of 32-bit integer instructions:
 
 - Arithmetic instructions
@@ -206,30 +207,31 @@ see <<exec_time_int_table>>.
 
 MAC Unit
 ^^^^^^^^
-The MAC unit executes DSP MAC operations. MAC operations are 32x32 with
+The ((MAC)) unit executes DSP MAC operations. MAC operations are 32x32 with
 48-bit accumulator. MAC unit is fully pipelined and can accept new MAC
 operation in each new clock cycle.
 
 Floating Point Unit
 ^^^^^^^^^^^^^^^^^^^
-The FPU implementation is based on two other FPUs available from OpenCores.org
-For the comparison and conversion functions, parts were taken from the FPU
-project by Rudolf Usselmann, and for the arithmetic operations, the fpu100
-project by Jidan Al-Eryani was converted to Verilog HDL.
+(((Floating Point Unit)))
+The ((FPU)) implementation is based on two other FPUs available from
+OpenCores.org. For the comparison and conversion functions, parts were taken
+from the FPU project by Rudolf Usselmann, and for the arithmetic operations,
+the fpu100 project by Jidan Al-Eryani was converted to Verilog HDL.
 
-All ORFPX32 instructions except for lf.madd.s and lf.rem.s are supported
-when the FPU is enabled in the OR1200 configuration.
+All ((ORFPX32)) instructions except for ((lf.madd.s)) and ((lf.rem.s)) are
+supported when the FPU is enabled in the OR1200 configuration.
 
 System Unit
 ^^^^^^^^^^^
-The system unit connects all other signals of the CPU/FPU/DSP that are not
+The ((system unit)) connects all other signals of the CPU/FPU/DSP that are not
 connected through instruction and data interfaces. It also implements all
 system special-purpose registers (e.g. supervisor register).
 
 Exceptions
 ^^^^^^^^^^
-Core exceptions can be generated when an exception condition occurs. Exception
-sources in OR1200 include the following:
+Core exceptions can be generated when an exception condition occurs.
+((Exception sources)) in OR1200 include the following:
 
 - External interrupt request
 - Certain memory access condition
@@ -237,16 +239,16 @@ sources in OR1200 include the following:
 - System call
 - Internal exception, such as breakpoint exceptions
 
-Exception handling is transparent to user software and uses the same mechanism
-to handle all types of exceptions. When an exception is taken, control is
-transferred to an exception handler at an offset defined by for the type of
-exception encountered. Exceptions are handled in supervisor mode.
+((Exception handling)) is transparent to user software and uses the same
+mechanism to handle all types of exceptions. When an exception is taken,
+control is transferred to an exception handler at an offset defined by for
+the type of exception encountered. Exceptions are handled in supervisor mode.
 
 Data Cache
 ~~~~~~~~~~
-The default configuration of OR1200 data cache is 8-Kbyte, 1-way direct-mapped
-data cache, which allows rapid core access to data. However data cache can
-be configured according to <<data_confs_or1200_table>>.
+The default configuration of OR1200 data ((cache)) is 8-Kbyte, 1-way
+direct-mapped data cache, which allows rapid core access to data. However
+data cache can be configured according to <<data_confs_or1200_table>>.
 
 [[data_confs_or1200_table]]
 .Possible Data Cache Configurations of OR1200
@@ -297,7 +299,7 @@ page boundaries.
 
 Instruction Cache
 ~~~~~~~~~~~~~~~~~
-The default configuration of OR1200 instruction cache is 8-Kbyte, 1-way
+The default configuration of OR1200 instruction ((cache)) is 8-Kbyte, 1-way
 direct mapped instruction cache, which allows rapid core access to
 instructions. However instruction cache can be configured according to
 <<inst_confs_or1200_table>>.
@@ -317,9 +319,11 @@ instructions. However instruction cache can be configured according to
 Features:
 
 - instruction cache is separate from data cache (Harvard architecture)
+  (((Architecture,Harvard)))
 - instruction cache implements a least-recently used (LRU) replacement
   algorithm within each set
-- the cache directory is physically addressed. The physical address tag is
+  ((LRU))
+- the ((cache directory)) is physically addressed. The physical address tag is
   stored in the cache directory
 - it can be disabled or invalidated by writing to cache special purpose
   registers
@@ -345,12 +349,13 @@ page boundaries.
 
 Data MMU
 ~~~~~~~~
-The OR1200 implements a virtual memory management scheme that provides memory
-access protection and effective-to-physical address translation. Protection
-granularity is as defined by OpenRISC 1000 architecture - 8-Kbyte and
-16-Mbyte pages.
+((MMU, Data))
+The OR1200 implements a ((virtual memory management)) scheme that
+provides memory access protection and effective-to-physical address
+translation. ((Protection)) granularity is as defined by OpenRISC 1000
+architecture - 8-Kbyte and 16-Mbyte pages.
 
-[[tlb_confs_or1200_table]]
+[[data_tlb_confs_or1200_table]]
 .Possible Data TLB Configurations of OR1200
 [width="60%",options="header"]
 |======================================
@@ -379,11 +384,315 @@ The MMU hardware supports two-level software tablewalk.
 
 Instruction MMU
 ~~~~~~~~~~~~~~~
+((MMU, Instruction))
+The OR1200 implements a virtual memory management scheme that provides memory
+access protection and effective-to-physical address translation. Protection
+granularity is as defined by OpenRISC 1000 architecture - 8-Kbyte and
+16-Mbyte pages.
 
+[[inst_tlb_confs_or1200_table]]
+.Possible Instruction TLB Configurations of OR1200
+[width="60%",options="header"]
+|======================================
+|			| Direct mapped
+| 16 entries per way	| 16 DTLB entries
+| 32 entries per way	| 32 DTLB entries
+| 64 entries per way	| *64 DTLB entries (default)*
+| 128 entries per way	| 128 DTLB entries
+|======================================
+
+Features:
+
+* instruction MMU is separate from data MMU
+* pages size 8-Kbyte
+* comprehensive page protection scheme
+* 1 way direct-mapped hash based translation lookaside buffer (ITLB) with the
+  following features:
+** miss and fault exceptions
+** software tablewalk
+** high performance because of hashed based design
+** Variable number of ITLB entries with default of 64 entries per way
+
+image::img/inst_mmu_diag.gif[scaledwidth="50%",align="center"]
+
+The MMU hardware supports two-level software tablewalk.
+
+Programmable Interrupt Controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ((interrupt)) controller receives interrupts from external sources and
+forwards them as low or high priority interrupt exception to the CPU core.
+
+[[interrupt_controller_fig]]
+.Block Diagram of the Interrupt Controller
+image::img/interrupt_controller.gif[scaledwidth="50%",align="center"]
+
+Programmable interrupt controller has three special-purpose registers and 32
+interrupt inputs. Interrupt input 0 and 1 are always enabled and connected
+to high and low priority interrupt input, respectively.
+
+30 other interrupt inputs can be masked and assigned low or high priority
+through programming special-purpose registers.
+
+Tick Timer
+~~~~~~~~~~
+OR1200 implements tick ((timer)) facility. Basically this is a timer that is
+clocked by RISC clock and is used by the operating system to precisely
+measure time and schedule system tasks.
+
+OR1200 precisely follow architectural definition of the tick timer facility:
+
+* Maximum timer count of 2^32 clock cycles
+* Maximum time period of 2^28 clock cycles between interrupts
+* Maskable tick timer interrupt
+* Single run, restartable or continues timer
+
+Tick timer operates from independent clock source so that doze power management
+mode can be implemented.
+
+Power Management Support
+~~~~~~~~~~~~~~~~~~~~~~~~
+To optimize ((power consumption)), the OR1200 provides ((low-power)) modes that
+can be used to dynamically activate and deactivate certain internal modules.
+
+OR1200 has three major features to minimize power consumption:
+
+* Slow and Idle Modes (SW controlled clock freq reduction)
+* Doze and Sleep Modes (interrupt wake-up)
+
+[[power_consumption_table]]
+.Power Consumption
+[width="60%",options="header"]
+|===================================================================
+| Power Minimization Feature	| Approx Power Consumption Reduction
+| Slow and Idle mode		| 2x – 10x
+| Doze mode			| 100x
+| Sleep mode			| 200x
+| Dynamic clock gating		| N/A
+|===================================================================
+
+Slow down mode takes advantage of the low-power dividers in external clock
+generation circuitry to enable full functionality, but at a lower frequency
+so that a power consumption is reduced.  PMR[SDF] 4 bits are broadcasted on
+pm_clksd and external clock generation for the RISC should adapt RISC clock
+frequency according to the value on pm_clksd.
+
+When software initiates the doze mode, software processing on the core
+suspends. The clocks to the RISC internal modules are disabled except to
+the tick timer. However any other on-chip blocks can continue to function
+as normal.  The OR1200 will leave doze mode and enter normal mode when a
+pending interrupt occurs.
+
+In sleep mode, all OR1200 internal units are disabled and clocks
+gated. Optionally implementation may choose to lower the operating voltage
+of the OR1200 core.  The OR1200 should leave sleep mode and enter normal
+mode when a pending interrupt occurs.
+
+Dynamic ((Clock gating)) (unit clock gating on clock by clock basis) is not
+supported by OR1200.
+
+Debug unit
+~~~~~~~~~~
+((Debug unit)) assists software developers to debug their systems. It provides
+support only for basic debugging and does not have support for more advanced
+debug features of OpenRISC 1000 architecture such as watchpoints, breakpoints
+and program-flow control registers.
+
+[[debug_unit_fig]]
+.Block Diagram of Debug Unit
+image::img/debug_unit_diag.gif[scaledwidth="50%",align="center"]
+
+Clocks & Reset
+~~~~~~~~~~~~~~
+The OR1200 core has a ((clock)) input each for the instruction and data Wishbone
+interface logic, and for the CPU core. Clock input clk_cpu clocks everything
+inside the Wishbone interfaces. Data Wishbone interface is clocked by
+dwb_clk_i, instruction Wishbone interface is clocked by iwb_clk_i.
+
+OR1200 has asynchronous ((reset)) signal. Reset signal rst, when asserted high,
+immediately resets all flip-flops inside OR1200. When deasserted, OR1200
+will start reset exception.
+
+WISHBONE Interfaces
+~~~~~~~~~~~~~~~~~~~
+Two ((WISHBONE)) interfaces connect OR1200 core to external peripherals and
+external memory subsystem. They are WISHBONE SoC Interconnection specification
+Rev. B3 compliant. The implementation implements a 32-bit bus width and does
+not support other bus widths.
+
+Wishbone registered-feedback incrementing burst accesses occur when not
+disabled, and cache lines are filled. The burst size (beats) is determined
+by the cache line size.
+
+image::img/wb_compatible.png[scaledwidth="30%",align="center"]
+
+Operation
+---------
+This section describes the operation of the OR1200 core. For operations
+that pertain to the architectural definitions, see <<or1000_manual>>.
+
+Reset
+~~~~~
+OR1200 has one asynchronous ((reset)) signal that can be used by a soft and hard
+reset on a higher system hierarchy levels.
+
+[[powerup_sequence_fig]]
+.Power-Up and Reset Sequence
+image::img/powerup_seq.gif[scaledwidth="70%",align="center"]
+
+<<powerup_sequence_fig>> shows how asynchronous reset is applied after
+powering up the OR1200 core. Reset is connected to asynchronous reset of
+almost all flip-flops inside RISC core. Special care must be taken to ensure
+hold and setup times of all flip-flops compared to main RISC clock.
+
+If system implements gated clocks, then clock gating can be used to ensure
+proper reset timing.
+
+[[powerup_sequence_gatedclk_fig]]
+.Power-Up and Reset Sequence w/ Gated Clock
+image::img/powerup_seq_gatedclk.gif[scaledwidth="70%",align="center"]
+
+The address the PC assumes at hard reset (assertion of external reset signal)
+is definable at synthesis time, via the OR1200_BOOT_ADR define. This is not
+to be confused with the ability to set the exception prefix address with
+the EPH bit.
+
+CPU/FPU/DSP
+~~~~~~~~~~~
+((CPU))/((FPU))/((DSP)) is implementation of the 32-bit part of the OpenRISC
+1000 architecture and only a subset of all features is implemented.
+
+Instructions
+^^^^^^^^^^^^
+(((OpenRISC 1200, Instruction List)))
+The following table lists the instructions implemented in the OR1200. Those
+optionally implemented are indicated as such.
+
+// The table below is split into several columns for readability by the
+// preprocessing script. It is better to have this automated because
+// given the pseudo-lexicographical ordering, adding a new instruction
+// would require manual changes in all subsequent columns, which is
+// tedious and error-prone.
+//
+// When changing the column headers, remember to change the script accordingly.
+
+[[instructions_table]]
+.Instructions implemented in OR1200
+[width="95%",options="header"]
+|=================================
+| Instruction mnemonic	| Optional
+| ((l.add))		|
+| ((l.addc))		| Yes
+| ((l.addi))		|
+| ((l.and))		|
+| ((l.andi))		|
+| ((l.bf))		|
+| ((l.bnf))		|
+| ((l.div))		| Yes
+| ((l.ff1))		| Yes
+| ((l.fl1))		| Yes
+| ((l.j))		|
+| ((l.jal))		|
+| ((l.jalr))		|
+| ((l.jr))		|
+| ((l.lbs))		|
+| ((l.lbz))		|
+| ((l.lhs))		|
+| ((l.lhz))		|
+| ((l.lws))		|
+| ((l.lwz))		|
+| ((l.mac))		| Yes
+| ((l.maci))		| Yes
+| ((l.macrc))		| Yes
+| ((l.mfspr))		|
+| ((l.movhi))		|
+| ((l.msb))		| Yes
+| ((l.mtspr))		|
+| ((l.mul))		| Yes
+| ((l.muli))		| Yes
+| ((l.nop))		|
+| ((l.or))		|
+| ((l.ori))		|
+| ((l.rfe))		|
+| ((l.rori))		|
+| ((l.sb))		|
+| ((l.sfeq))		|
+| ((l.sfges))		|
+| ((l.sfgeu))		|
+| ((l.sfgts))		|
+| ((l.sfgtu))		|
+| ((l.sfleu))		|
+| ((l.sflts))		|
+| ((l.sfltu))		|
+| ((l.sfne))		|
+| ((l.sh))		|
+| ((l.sll))		|
+| ((l.slli))		|
+| ((l.sra))		|
+| ((l.srai))		|
+| ((l.srl))		|
+| ((l.srli))		|
+| ((l.sub))		| Yes
+| ((l.sw))		|
+| ((l.sys))		|
+| ((l.trap))		|
+| ((l.xor))		|
+| ((l.xori))		|
+| ((lf.add))	.s	| Yes
+| ((lf.div))	.s	| Yes
+| ((lf.ftoi))	.s	| Yes
+| ((lf.itof))	.s	| Yes
+| ((lf.mul))	.s	| Yes
+| ((lf.sfeq))	.s	| Yes
+| ((lf.sfge))	.s	| Yes
+| ((lf.sfgt))	.s	| Yes
+| ((lf.sfle))	.s	| Yes
+| ((lf.sflt))	.s	| Yes
+| ((lf.sfne))	.s	| Yes
+| ((lf.sub))	.s	| Yes
+|=================================
+
+For a complete description of each instruction's format refer to
+<<or1000_manual>>.
+
+Instruction Unit
+^^^^^^^^^^^^^^^^
+(Instruction unit) generates instruction fetch effective address and fetches
+instructions from instruction cache. Each clock cycle one instruction can
+be fetched. Instruction fetch EA is further translated into physical address
+by IMMU.
+
+General-Purpose Registers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+((General-purpose register)) file can supply two read operands each clock cycle
+and store one result in a destination register.
+
+GPRs can be also read and written through development interface.
+
+Load/Store Unit
+^^^^^^^^^^^^^^^
+((LSU)) can execute one load instruction every two clock cycles assuming load
+instruction have a hit in the data cache. Execution of store instructions
+takes one clock cycle assuming they have a hit in the data cache.
+
+LSU performs calculation of the load/store effective address. EA is further
+translated into physical address by DMMU.
+
+Load/store effective address and load and store data can be also accessed
+through development interface.
+
+Integer Execution Pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+(((Pipeline, Integer Execution)))
+The core implements the following types of 32-bit integer instructions:
+
+* Arithmetic instructions
+* Compare instructions
+* Logical instructions
+* Rotate and shift instructions
 
 [[exec_time_int_table]]
 .Execution Time of Integer Instructions
-[width="60%",options="header"]
+[width="70%",options="header"]
 |================================================
 | Instruction Group	| Clock Cycles to Execute
 | Arithmetic except Multiply/Divide	| 1
@@ -395,136 +704,131 @@ Instruction MMU
 | Others				| 1
 |================================================
 
+<<exec_time_int_table>> lists execution times for instructions executed by
+integer execution pipeline. Most instructions are executed in one clock cycle.
 
+Integer multiply can be either serial or parallel implementations. Serial
+operations require one clock cycle per bit of operand, which is 32-cycles
+on the OR1200. At present no synthesis tools support division operators,
+and so the serial option must be used.
 
+MAC Unit
+^^^^^^^^
+((MAC)) unit executes l.mac instructions. MAC unit implements 32x32 fully
+pipelined multiplier and 48-bit accumulator. MAC unit can accept one new
+l.mac instruction each clock cycle.
 
-[partintro]
-.Optional part introduction title
---
-Optional part introduction goes here.
---
+Care should be taken when executing l.macrc (MAC read and clear) too soon
+after the final l.mac instruction as the operation may still be underway
+and the result will not be valid in time. It is recommended at least 3 other
+instructions (or just l.nops) are inserted between the final l.mac and l.macrc.
 
-The First Chapter
------------------
-Chapters can be grouped by preceeding them with a level 0 Book Part
-title.
-
-Book chapters are at level 1 and can contain sub-sections nested up to
-three deep.
-footnote:[An example footnote.]
-indexterm:[Example index entry]
-
-It's also worth noting that a book part can have it's own preface,
-bibliography, glossary and index. Chapters can have their own
-bibliography, glossary and index.
-
-And now for something completely different: ((monkeys)), lions and
-tigers (Bengal and Siberian) using the alternative syntax index
-entries.
-(((Big cats,Lions)))
-(((Big cats,Tigers,Bengal Tiger)))
-(((Big cats,Tigers,Siberian Tiger)))
-Note that multi-entry terms generate separate index entries.
-
-Followed by an example table:
-
-.An example table
-[width="60%",options="header"]
-|==============================================
-| Option          | Description
-| -a 'USER GROUP' | Add 'USER' to 'GROUP'.
-| -R 'GROUP'      | Disables access to 'GROUP'.
-|==============================================
-
-.An example example
-===============================================
-Lorum ipum...
-===============================================
-
-[[X1]]
-Sub-section with Anchor
-~~~~~~~~~~~~~~~~~~~~~~~
-Sub-section at level 2.
-
-Chapter Sub-section
+Floating Point Unit
 ^^^^^^^^^^^^^^^^^^^
-Sub-section at level 3.
+The ((floating point unit)) has a mechanism to stall the processor pipeline
+until processing has completed.
 
-Chapter Sub-section
-+++++++++++++++++++
-Sub-section at level 4.
+The following table indicates the number of cycles per operation
 
-This is the maximum sub-section depth supported by the distributed
-AsciiDoc configuration.
-footnote:[A second example footnote.]
+[[exec_time_fp_table]]
+.Execution time of floating point instructions
+[width="60%",options="header"]
+|=======================
+| Operation	| Cycles
+| Add/subtract	| 10
+| Multiply	| 38
+| Divide	| 37
+| Compare	| 2
+| Convert	| 7
+|=======================
 
+System Unit
+^^^^^^^^^^^
+((System unit)) implements system control and status special-purpose registers
+and executes all l.mtspr/l.mfspr instructions.
 
-The Second Chapter
-------------------
-An example link to anchor at start of the <<X1,first sub-section>>.
-indexterm:[Second example index entry]
+Exceptions
+^^^^^^^^^^
+The core implements a precise ((exception model)). This means that when an
+exception is taken, the following conditions are met:
 
-An example link to a bibliography entry <<taoup>>.
+* Subsequent instructions in program flow are discarded
+* Previous instructions finish and write back their results
+* The address of faulting instruction is saved in EPCR registers and the
+  machine state is saved to ESR registers
 
+[[exceptions_table]]
+.List of Implemented ((Exceptions))
+[width="95%",options="header"]
+|===========================================================
+| Exception Type	| Vector Offset	| Causing Conditions
+| Reset			| 0x100	| Caused by reset.
+| Bus Error		| 0x200	| Caused by an attempt to access invalid
+  physical address.
+| Data Page Fault	| 0x300	| Generated artificially by DTLB miss exception
+  handler when no matching PTE found in page tables or page protection
+  violation for load/store operations.
+| Instruction Page Fault| 0x400	| Generated artificially by ITLB miss exception
+  handler when no matching PTE found in page tables or page protection violation
+  for instruction fetch.
+| Low Priority External Interrupt	| 0x500	| Low priority external
+  interrupt asserted.
+| Alignment	| 0x600	| Load/store access to naturally not aligned location.
+| Illegal Instruction	| 0x700	| Illegal instruction in the instruction stream.
+| High Priority External Interrupt	| 0x800	| High priority external
+  interrupt asserted.
+| D-TLB Miss	| 0x900	| No matching entry in DTLB (DTLB miss).
+| I-TLB Miss	| 0xA00	| No matching entry in ITLB (ITLB miss).
+| System Call	| 0xC00	| System call initiated by software.
+| Floating point exception	| 0xD00	| FP operation caused flags in FPCSR to
+  become set.
+| Trap	| 0xE00	| Trap instruction was decoded
+|===========================================================
 
+[appendix]
+Core HW Configuration
+=====================
+(((Hardware,Configuration)))
+This section describes parameters that are set by the user of the core and
+define configuration of the core. Parameters must be set by the user before
+actual use of the core in simulation or synthesis.
 
-The First Chapter of the Second Part
-------------------------------------
-Chapters grouped into book parts are at level 1 and can contain
-sub-sections.
+[[core_hw_conf_table]]
+.Core HW configuration table
+[width="95%",options="header"]
+|============================================================
+| Variable Name	| Range		| Default	| Description
+| EADDR_WIDTH	| 32		| 32	| Effective address width
+| VADDR_WIDTH	| 32		| 32	| Virtual address width
+| PADDR_WIDTH	| 24 – 36	| 32	| Physical address width
+| DATA_WIDTH	| 32		| 32	| Data width / Operation width
+| DC_IMPL	| 0 – 1		| 1	| Data cache implementation
+| DC_SETS	| 256-1024	| 512	| Data cache number of sets
+| DC_WAYS	| 1		| 1	| Data cache number of ways
+| DC_LINE	| 16 - 32	| 16	| Data cache line size
+| IC_IMPL	| 0 – 1		| 1	| Instruction cache implementation
+| IC_SETS	| 32-1024	| 512	| Instruction cache number of sets
+| IC_WAYS	| 1		| 1	| Instruction cache number of ways
+| IC_LINE	| 16-32		| 16	| Instruction cache line size in bytes
+| DMMU_IMPL	| 0 – 1		| 1	| Data MMU implementation
+| DTLB_SETS	| 64		| 64	| Data TLB number of sets
+| DTLB_WAYS	| 1		| 1	| Data TLB number of ways
+| IMMU_IMPL	| 0 – 1		| 1	| Instruction MMU implementation
+| ITLB_SETS	| 64		| 64	| Instruction TLB number of sets
+| ITLB_WAYS	| 1		| 1	| Instruction TLB number of ways
+| PIC_INTS	| 2 – 32	| 20	| Number of interrupt inputs
+|============================================================
 
 :numbered!:
 
-[appendix]
-Example Appendix
-================
-One or more optional appendixes go here at section level zero.
-
-Appendix Sub-section
-~~~~~~~~~~~~~~~~~~~
-NOTE: Preface and appendix subsections start out of sequence at level
-2 (level 1 is skipped).  This only applies to multi-part book
-documents.
-
-
-
 [bibliography]
-Example Bibliography
-====================
-The bibliography list is a style of AsciiDoc bulleted list.
-
+Bibliography
+============
 [bibliography]
-- [[[taoup]]] Eric Steven Raymond. 'The Art of Unix
-  Programming'. Addison-Wesley. ISBN 0-13-142901-9.
-- [[[walsh-muellner]]] Norman Walsh & Leonard Muellner.
-  'DocBook - The Definitive Guide'. O'Reilly & Associates. 1999.
-  ISBN 1-56592-580-7.
-
-
-[glossary]
-Example Glossary
-================
-Glossaries are optional. Glossaries entries are an example of a style
-of AsciiDoc labeled lists.
-
-[glossary]
-A glossary term::
-  The corresponding (indented) definition.
-
-A second glossary term::
-  The corresponding (indented) definition.
-
-
-[colophon]
-Example Colophon
-================
-Text at the end of a book describing facts about its production.
-
+- [[[or1000_manual]]] Damjan Lampret et al. 'OpenRISC 1000 System Architecture
+  Manual'. 2004.
 
 [index]
-Example Index
-=============
-////////////////////////////////////////////////////////////////
-The index is normally left completely empty, it's contents are
-generated automatically by the DocBook toolchain.
-////////////////////////////////////////////////////////////////
+Index
+=====
+// The index is generated automatically by the DocBook toolchain.
