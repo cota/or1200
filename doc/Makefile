@@ -4,8 +4,11 @@ XSLTPROC=xsltproc
 DBLATEX=dblatex
 
 RM ?= rm -f
+CP ?= cp
+MV ?= mv
 CAT ?= cat
 GEN-DOCINFO=gen-docinfo.pl
+PREPROCESS=preprocess.pl
 
 ifndef PERL_PATH
 	PERL_PATH = /usr/bin/perl
@@ -27,6 +30,7 @@ ifndef V
 	QUIET_XSLTPROC		= @echo '   ' XSLTPROC $@;
 	QUIET_DBLATEX		= @echo '   ' DBLATEX $@;
 	QUIET_GEN-DOCINFO	= @echo '   ' GEN-DOCINFO $@;
+	QUIET_PREPROCESS	= @echo '   ' PREPROCESS $<;
 	export V
 endif
 endif
@@ -41,24 +45,33 @@ $(SPEC_DOCINFO): $(SPEC_TXT) $(GEN-DOCINFO)
 	$(PERL_PATH) -ne 'if (/__vstart__/../__vend__/) {print unless /__v(start|end)__/}' | \
 	$(PERL_PATH) $(GEN-DOCINFO) > $@
 
-$(SPEC_XML): $(SPEC_TXT) $(SPEC_DOCINFO)
+$(SPEC_TXT)+: $(SPEC_TXT)
+	$(QUIET_PREPROCESS)$(PERL_PATH) $(PREPROCESS) $< > $@
+
+$(SPEC_XML): $(SPEC_TXT)+ $(SPEC_DOCINFO)
 	$(QUIET_ASCIIDOC)$(ASCIIDOC) $(ASCIIDOC_EXTRA) -b docbook $<
 
 XSLT = docbook.xsl
-XSLTOPTS = --xinclude --stringparam html.stylesheet docbook-xsl.css
+XSLTOPTS = --xinclude --stringparam html.stylesheet docbook-xsl.css \
+	--stringparam  section.autolabel 1 \
+	--stringparam  section.label.includes.component.label 1
 
 $(SPEC_HTML): $(SPEC_XML)
-	$(QUIET_XSLTPROC)$(XSLTPROC) $(XSLTOPTS) -o $@ $(XSLT) $<
+	$(QUIET_XSLTPROC)$(RM) $@+ $@ && \
+	$(XSLTPROC) $(XSLTOPTS) -o $@+ $(XSLT) $< && \
+	$(MV) $@+ $@
 
 DBLATEXOPTS = --param=doc.publisher.show=0
 
 $(SPEC_PDF): $(SPEC_XML)
 	$(QUIET_DBLATEX)$(RM) $@+ $@ && \
-	$(DBLATEX) $(DBLATEXOPTS) -o $@+ -p /etc/asciidoc/dblatex/asciidoc-dblatex.xsl -s /etc/asciidoc/dblatex/asciidoc-dblatex.sty $< && \
-	mv $@+ $@
+	$(DBLATEX) $(DBLATEXOPTS) -o $@+ \
+	-p /etc/asciidoc/dblatex/asciidoc-dblatex.xsl \
+	-s /etc/asciidoc/dblatex/asciidoc-dblatex.sty $< && \
+	$(MV) $@+ $@
 
 clean:
 	$(RM) *.xml *.xml+ *.html *.html+
-	$(RM) spec.pdf spec.pdf+
+	$(RM) spec.pdf spec.pdf+ spec.txt+
 
 .PHONY: all clean html
