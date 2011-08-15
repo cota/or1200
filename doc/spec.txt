@@ -254,8 +254,6 @@ be configured according to <<data_confs_or1200_table>>.
 |======================================================
 |					| Direct mapped
 | 16B/line, 256 lines, 1 way		| 4KB
-| Arithmetic except Multiply/Divide	| 1
-| 16B/line, 256 lines, 1 way		| 4KB
 | 16B/line, 512 lines, 1 way		| *8KB (default)*
 | 16B/line, 1024 lines, 1 way		| 16KB
 | 32B/line, 1024 lines, 1 way		| 32KB
