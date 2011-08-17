@@ -637,18 +637,18 @@ optionally implemented are indicated as such.
 | ((l.trap))		|
 | ((l.xor))		|
 | ((l.xori))		|
-| ((lf.add))	.s	| Yes
-| ((lf.div))	.s	| Yes
-| ((lf.ftoi))	.s	| Yes
-| ((lf.itof))	.s	| Yes
-| ((lf.mul))	.s	| Yes
-| ((lf.sfeq))	.s	| Yes
-| ((lf.sfge))	.s	| Yes
-| ((lf.sfgt))	.s	| Yes
-| ((lf.sfle))	.s	| Yes
-| ((lf.sflt))	.s	| Yes
-| ((lf.sfne))	.s	| Yes
-| ((lf.sub))	.s	| Yes
+| ((lf.add.s))		| Yes
+| ((lf.div.s))		| Yes
+| ((lf.ftoi.s))		| Yes
+| ((lf.itof.s))		| Yes
+| ((lf.mul.s))		| Yes
+| ((lf.sfeq.s))		| Yes
+| ((lf.sfge.s))		| Yes
+| ((lf.sfgt.s))		| Yes
+| ((lf.sfle.s))		| Yes
+| ((lf.sflt.s))		| Yes
+| ((lf.sfne.s))		| Yes
+| ((lf.sub.s))		| Yes
 |=================================
 
 For a complete description of each instruction's format refer to
