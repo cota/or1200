@@ -983,8 +983,8 @@ and optionally provided on +dwb_ADDR_O+, is the same as load/store effective
 address.
 (((Address Translation,Data)))
 
-Translation Enable
-^^^^^^^^^^^^^^^^^^
+Translation Enabled
+^^^^^^^^^^^^^^^^^^^
 Load/store address translation can be enabled by setting bit SR[DME]. If
 translation is enabled, it provides load/store effective address to physical
 address translation and page protection for memory accesses.
