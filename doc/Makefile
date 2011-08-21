@@ -1,5 +1,4 @@
 ASCIIDOC=asciidoc
-A2X=a2x
 XSLTPROC=xsltproc
 DBLATEX=dblatex
 
@@ -26,7 +25,6 @@ SPEC_DOCINFO=$(patsubst %.txt,%-docinfo.xml,$(SPEC_TXT))
 ifneq ($(findstring $(MAKEFLAGS),s),s)
 ifndef V
 	QUIET_ASCIIDOC		= @echo '   ' ASCIIDOC $@;
-	QUIET_A2X		= @echo '   ' A2 $@;
 	QUIET_XSLTPROC		= @echo '   ' XSLTPROC $@;
 	QUIET_DBLATEX		= @echo '   ' DBLATEX $@;
 	QUIET_GEN-DOCINFO	= @echo '   ' GEN-DOCINFO $@;
