@@ -349,7 +349,7 @@ page boundaries.
 
 Data MMU
 ~~~~~~~~
-((MMU, Data))
+(((MMU, Data)))
 The OR1200 implements a ((virtual memory management)) scheme that
 provides memory access protection and effective-to-physical address
 translation. ((Protection)) granularity is as defined by OpenRISC 1000
@@ -384,7 +384,7 @@ The MMU hardware supports two-level software tablewalk.
 
 Instruction MMU
 ~~~~~~~~~~~~~~~
-((MMU, Instruction))
+(((MMU, Instruction)))
 The OR1200 implements a virtual memory management scheme that provides memory
 access protection and effective-to-physical address translation. Protection
 granularity is as defined by OpenRISC 1000 architecture - 8-Kbyte and
@@ -500,6 +500,11 @@ and program-flow control registers.
 [[debug_unit_fig]]
 .Block Diagram of Debug Unit
 image::img/debug_unit_diag.gif[scaledwidth="50%",align="center"]
+
+Watchpoints and breakpoints are events triggered by program- or data-flow
+matching the conditions programmed in the debug registers. Breakpoints
+unlike watchpoints also suspend execution of the current program-flow and
+start breakpoint exception.
 
 Clocks & Reset
 ~~~~~~~~~~~~~~
@@ -656,7 +661,7 @@ For a complete description of each instruction's format refer to
 
 Instruction Unit
 ^^^^^^^^^^^^^^^^
-(Instruction unit) generates instruction fetch effective address and fetches
+((Instruction unit)) generates instruction fetch effective address and fetches
 instructions from instruction cache. Each clock cycle one instruction can
 be fetched. Instruction fetch EA is further translated into physical address
 by IMMU.
@@ -1110,6 +1115,14 @@ Uncached accesses must be performed when I/O registers are memory mapped
 and all reads and writes must be always performed directly to the external
 interface and not to the data cache.
 
+Page Attribute - Cache Coherency (CC)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Cache coherency (CC) attribute is not needed in OR1200 because it does not
+implement support for multiprocessor environments and because data cache
+operates only in write-through mode and therefore this attribute is not
+implemented.
+(((Page Attributes,Data)))
+
 ((Instruction MMU))
 ~~~~~~~~~~~~~~~~~~~
 Translation Disabled
@@ -1393,8 +1406,8 @@ The DIR special-purpose register is not implemented.
 
 Reading PC, Load/Store EA, Load Data, Store Data, Instruction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Crucial information like ((program counter)) (PC), ((load/store effective
-address)) (LSEA), load data, store data and current instruction in execution
+Crucial information like ((program counter)) (PC), load/store effective
+address (LSEA), load data, store data and current instruction in execution
 pipeline can be asynchronously read through the development interface.
 
 [[dev_commands_table]]
@@ -1866,7 +1879,7 @@ implemented inside OR1200 core.
 | ((pm_immu_gate))	| 1	| Output	| Dynamic (in HW)	| Gating of instruction MMU clock
 | ((pm_tt_gate))	| 1	| Output	| Dynamic (in HW)	| Gating of tick timer clock
 | ((pm_cpu_gate))	| 1	| Output	| Static (in SW)	| Gating of main CPU clock
-| ((pm_wakeup)		| 1	| Output	| Dynamic (in HW)	| Activate all clocks
+| ((pm_wakeup))		| 1	| Output	| Dynamic (in HW)	| Activate all clocks
 | ((pm_lvolt))		| 1	| Output	| Static (in SW)	| Lower voltage
 |============================================================================
 
